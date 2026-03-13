@@ -1,12 +1,8 @@
-// Spezziamo la chiave in due per ingannare il controllo di sicurezza di GitHub
-const API_KEY = "hf_eDDPhozTCx" + "vrnmCqLguYZUJuAHHXcikVGU"; 
-
 const chatBox = document.getElementById("chat-box");
 const userInput = document.getElementById("user-input");
 const sendBtn = document.getElementById("send-btn");
-const modelSelect = document.getElementById("model-select");
+const colabUrlInput = document.getElementById("colab-url");
 
-// Funzione per aggiungere messaggi all'interfaccia
 function addMessage(text, sender) {
     const msgDiv = document.createElement("div");
     msgDiv.classList.add("message", sender === "user" ? "user-message" : "bot-message");
@@ -16,85 +12,72 @@ function addMessage(text, sender) {
     return msgDiv;
 }
 
-// Funzione principale per gestire l'invio
 async function sendMessage() {
     const message = userInput.value.trim();
+    let colabBaseUrl = colabUrlInput.value.trim();
+    
     if (!message) return;
+    
+    // Controllo di sicurezza sull'URL
+    if (!colabBaseUrl) {
+        alert("Inserisci l'URL di Ngrok generato da Colab in alto!");
+        return;
+    }
+    
+    // Rimuoviamo la barra finale dall'URL se l'utente l'ha messa per sbaglio
+    if (colabBaseUrl.endsWith('/')) {
+        colabBaseUrl = colabBaseUrl.slice(0, -1);
+    }
 
-    // Leggiamo il modello selezionato in quel momento dalla tendina
-    const selectedModel = modelSelect.value;
-    const API_URL = `https://api-inference.huggingface.co/models/${selectedModel}`;
+    const API_URL = `${colabBaseUrl}/chat`;
 
-    // 1. Mostra il messaggio dell'utente
     addMessage(message, "user");
     userInput.value = "";
     
-    // 2. Disabilita l'input
     sendBtn.disabled = true;
     userInput.disabled = true;
-    modelSelect.disabled = true; // Blocca la tendina mentre elabora
-    const loadingMsg = addMessage("Sta pensando...", "bot");
+    
+    const loadingMsg = addMessage("La GPU sta calcolando...", "bot");
     loadingMsg.classList.add("loading");
 
     try {
-        // 3. Chiama l'API di Hugging Face
         const response = await fetch(API_URL, {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${API_KEY}`,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                inputs: message,
-                parameters: {
-                    max_new_tokens: 400,
-                    return_full_text: false
-                }
+                messaggio: message
             })
         });
 
         const result = await response.json();
         chatBox.removeChild(loadingMsg);
 
-        // Gestione avanzata degli errori (Es. Errore 503: Modello in fase di caricamento)
         if (!response.ok) {
-            if (response.status === 503 && result.estimated_time) {
-                const waitTime = Math.round(result.estimated_time);
-                addMessage(`⏳ Il server sta accendendo il modello. Riprova tra circa ${waitTime} secondi.`, "bot");
-                return;
-            } else if (result.error) {
-                addMessage(`⚠️ Errore dal server: ${result.error}`, "bot");
-                return;
-            }
-            throw new Error(`Errore generico Server: ${response.status}`);
+            addMessage(`⚠️ Errore dal server Colab: ${response.status}`, "bot");
+            return;
         }
         
-        // 4. Mostra la risposta generata
-        if (result && result.length > 0 && result[0].generated_text) {
-            let botReply = result[0].generated_text;
-            // Pulizia base per evitare che alcuni modelli ripetano la domanda
-            botReply = botReply.replace(message, "").trim();
-            addMessage(botReply, "bot");
+        if (result.risposta) {
+            addMessage(result.risposta, "bot");
         } else {
-            addMessage("Scusa, la risposta del modello era vuota.", "bot");
+            addMessage("Errore: risposta vuota dal modello.", "bot");
         }
 
     } catch (error) {
-        console.error("Errore:", error);
+        console.error("Errore di Rete:", error);
         if (chatBox.contains(loadingMsg)) {
             chatBox.removeChild(loadingMsg);
         }
-        addMessage("🔌 Impossibile connettersi. Controlla la connessione o cambia modello.", "bot");
+        addMessage("🔌 Connessione fallita. Assicurati che lo script su Colab stia ancora girando e che l'URL sia corretto.", "bot");
     } finally {
-        // 5. Riabilita tutto
         sendBtn.disabled = false;
         userInput.disabled = false;
-        modelSelect.disabled = false;
         userInput.focus();
     }
 }
 
-// Event Listeners
 sendBtn.addEventListener("click", sendMessage);
 userInput.addEventListener("keypress", function(e) {
     if (e.key === "Enter") {
