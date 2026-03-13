@@ -36,7 +36,7 @@ export default function ChatVercel() {
       setIsLoading(false);
     }
   };
-
+ 
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px', fontFamily: 'sans-serif' }}>
       <h1 style={{ textAlign: 'center' }}>🧠 Chat con Phi-4</h1>
