@@ -119,3 +119,11 @@ body {
     color: #888;
     font-size: 0.9rem;
 }
+#colab-url {
+    flex: 1;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #007bff;
+    font-size: 0.9rem;
+    outline: none;
+}
