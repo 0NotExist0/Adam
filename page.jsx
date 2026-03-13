@@ -76,4 +76,4 @@ export default function ChatVercel() {
       </form>
     </div>
   );
-}
+} 
