@@ -1,6 +1,6 @@
 // Spezziamo la chiave in due per ingannare il controllo di sicurezza di GitHub
 const API_KEY = "hf_eDDPhozTCx" + "vrnmCqLguYZUJuAHHXcikVGU"; 
-const API_URL = "https://api-inference.huggingface.co/models/microsoft/phi-4";
+const API_URL = "https://api-inference.huggingface.co/models/microsoft/Phi-3-mini-4k-instruct";
 
 const chatBox = document.getElementById("chat-box");
 const userInput = document.getElementById("user-input");
