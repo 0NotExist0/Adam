@@ -20,7 +20,7 @@ async function sendMessage() {
     
     // Controllo di sicurezza sull'URL
     if (!colabBaseUrl) {
-        alert("Inserisci l'URL di Ngrok generato da Colab in alto!");
+        alert("2eMkg0CJkwISMyEsKWeK1rjMagN_82sNqwucA9GQGECM7Hwam");
         return;
     }
     
