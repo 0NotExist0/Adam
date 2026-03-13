@@ -3,25 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Multi-Modello</title>
+    <title>Chat con Colab</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div id="chat-header">🧠 IA Chatbot</div>
+    <div id="chat-header">🚀 IA Server Privato (Colab)</div>
     
     <div id="settings-area">
-        <label for="model-select">Modello IA:</label>
-        <select id="model-select">
-            <option value="HuggingFaceH4/zephyr-7b-beta">Zephyr 7B (Consigliato, molto stabile)</option>
-            <option value="mistralai/Mistral-7B-Instruct-v0.3">Mistral 7B Instruct</option>
-            <option value="Qwen/Qwen2.5-7B-Instruct">Qwen 2.5 (7B)</option>
-            <option value="microsoft/Phi-3-mini-4k-instruct">Phi-3 Mini (Microsoft)</option>
-        </select>
+        <label for="colab-url">URL di Colab:</label>
+        <input type="text" id="colab-url" placeholder="Incolla qui l'URL di Ngrok (es. https://xyz.ngrok-free.app)" autocomplete="off">
     </div>
     
     <div id="chat-box">
-        <div class="message bot-message">Ciao! Scegli un modello dal menu qui in alto e iniziamo a chattare.</div>
+        <div class="message bot-message">Avvia lo script su Google Colab, copia l'URL che appare in verde, incollalo qui sopra e scrivimi!</div>
     </div>
 
     <div id="input-area">
