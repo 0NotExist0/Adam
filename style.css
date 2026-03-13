@@ -19,6 +19,33 @@ body {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+/* NUOVO: Stile per la barra delle impostazioni */
+#settings-area {
+    background-color: white;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+#settings-area label {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #333;
+}
+
+#model-select {
+    flex: 1;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 0.9rem;
+    background-color: #f9f9f9;
+    outline: none;
+}
+
 #chat-box {
     flex: 1;
     padding: 20px;
