@@ -1,12 +1,10 @@
 // Spezziamo la chiave in due per ingannare il controllo di sicurezza di GitHub
 const API_KEY = "hf_eDDPhozTCx" + "vrnmCqLguYZUJuAHHXcikVGU"; 
 
-// ABBIAMO CAMBIATO QUESTA RIGA: Ora usiamo Phi-3-mini, perfetto per l'API gratuita
-const API_URL = "https://api-inference.huggingface.co/models/microsoft/Phi-3-mini-4k-instruct";
-
 const chatBox = document.getElementById("chat-box");
 const userInput = document.getElementById("user-input");
 const sendBtn = document.getElementById("send-btn");
+const modelSelect = document.getElementById("model-select");
 
 // Funzione per aggiungere messaggi all'interfaccia
 function addMessage(text, sender) {
@@ -14,7 +12,7 @@ function addMessage(text, sender) {
     msgDiv.classList.add("message", sender === "user" ? "user-message" : "bot-message");
     msgDiv.textContent = text;
     chatBox.appendChild(msgDiv);
-    chatBox.scrollTop = chatBox.scrollHeight; // Scorre in basso automaticamente
+    chatBox.scrollTop = chatBox.scrollHeight;
     return msgDiv;
 }
 
@@ -23,14 +21,19 @@ async function sendMessage() {
     const message = userInput.value.trim();
     if (!message) return;
 
+    // Leggiamo il modello selezionato in quel momento dalla tendina
+    const selectedModel = modelSelect.value;
+    const API_URL = `https://api-inference.huggingface.co/models/${selectedModel}`;
+
     // 1. Mostra il messaggio dell'utente
     addMessage(message, "user");
     userInput.value = "";
     
-    // 2. Disabilita l'input mentre il bot "pensa"
+    // 2. Disabilita l'input
     sendBtn.disabled = true;
     userInput.disabled = true;
-    const loadingMsg = addMessage("Sta scrivendo...", "bot");
+    modelSelect.disabled = true; // Blocca la tendina mentre elabora
+    const loadingMsg = addMessage("Sta pensando...", "bot");
     loadingMsg.classList.add("loading");
 
     try {
@@ -44,43 +47,54 @@ async function sendMessage() {
             body: JSON.stringify({
                 inputs: message,
                 parameters: {
-                    max_new_tokens: 250,
+                    max_new_tokens: 400,
                     return_full_text: false
                 }
             })
         });
 
-        if (!response.ok) {
-            throw new Error(`Errore Server: ${response.status}`);
-        }
-
         const result = await response.json();
-        
-        // 4. Rimuovi il messaggio di caricamento e mostra la risposta
         chatBox.removeChild(loadingMsg);
+
+        // Gestione avanzata degli errori (Es. Errore 503: Modello in fase di caricamento)
+        if (!response.ok) {
+            if (response.status === 503 && result.estimated_time) {
+                const waitTime = Math.round(result.estimated_time);
+                addMessage(`⏳ Il server sta accendendo il modello. Riprova tra circa ${waitTime} secondi.`, "bot");
+                return;
+            } else if (result.error) {
+                addMessage(`⚠️ Errore dal server: ${result.error}`, "bot");
+                return;
+            }
+            throw new Error(`Errore generico Server: ${response.status}`);
+        }
         
+        // 4. Mostra la risposta generata
         if (result && result.length > 0 && result[0].generated_text) {
-            // Puliamo la risposta per evitare che ripeta il prompt iniziale
             let botReply = result[0].generated_text;
+            // Pulizia base per evitare che alcuni modelli ripetano la domanda
             botReply = botReply.replace(message, "").trim();
             addMessage(botReply, "bot");
         } else {
-            addMessage("Scusa, non ho capito.", "bot");
+            addMessage("Scusa, la risposta del modello era vuota.", "bot");
         }
 
     } catch (error) {
         console.error("Errore:", error);
-        chatBox.removeChild(loadingMsg);
-        addMessage("Si è verificato un errore di connessione con il modello.", "bot");
+        if (chatBox.contains(loadingMsg)) {
+            chatBox.removeChild(loadingMsg);
+        }
+        addMessage("🔌 Impossibile connettersi. Controlla la connessione o cambia modello.", "bot");
     } finally {
-        // 5. Riabilita l'input
+        // 5. Riabilita tutto
         sendBtn.disabled = false;
         userInput.disabled = false;
+        modelSelect.disabled = false;
         userInput.focus();
     }
 }
 
-// Event Listeners per il click o per il tasto Invio (Enter)
+// Event Listeners
 sendBtn.addEventListener("click", sendMessage);
 userInput.addEventListener("keypress", function(e) {
     if (e.key === "Enter") {
